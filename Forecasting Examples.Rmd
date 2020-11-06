@@ -1,0 +1,108 @@
+---
+title: "Data Analyltics in Finance"
+author: "Jeff Bostwick"
+date: "11/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Holt Winter's Forecasting Method
+ 
+#### Loading Packages
+```{r Loadiing Packages, echo=TRUE, message=FALSE, warning=FALSE}
+library(forecast)
+library(fma)
+library(datasets)
+library(ggplot2)
+```
+ 
+
+#### View Sample Dataset
+```{r Sample Data, echo=TRUE, message=FALSE, warning=FALSE}
+airpass
+```
+ 
+
+#### Plot the Dataset
+
+```{r}
+autoplot(airpass)
+```
+ 
+ 
+### Simple Exponential Smoothing Example
+#### Creating a varaiable called SES5 that is simple expontntial smoothing.  h accounts for the number of lags.
+ 
+```{r}
+ses5 <- ses(airpass, h=5)
+ses5
+```
+
+Here are some various measures of error.  The RMSE is the one that we should focus on
+```{r}
+accuracy(ses5)
+```
+ 
+ 
+### Creating a Forecast Plot with Simple Exponential Smoothing
+
+```{r Simple Exponential Smoothing Example, echo=TRUE, message=FALSE, warning=FALSE}
+autoplot(ses5) +
+autolayer(fitted(ses5), series = "Fitted")
+```
+
+From this we can see an upward trend and see that there is a seasonal cycle that has an upward trend
+The fitted values are in Red.  The Dark Blue is the 80% confidence interval. 
+The light blue is the 95% confidence interval.  The line is the predicted value = 431.99
+ 
+### Now we can try to adujust to 25 lags
+```{r}
+ses25 <- ses(airpass, h=25)
+autoplot(ses25)
+```
+
+ 
+## Holt's Linear Trend Model
+#### This will add the linear trend to our model
+ 
+```{r Creating Holt Method Graph}
+holt5 <- holt(airpass, h=5) 
+autoplot(holt5) + autolayer(fitted(holt5), series = "Fitted")
+```
+ 
+#### There is evidence that the Holt Linear Trend method overestimates the predicted values.
+#### There is research that says that dampening the trend can help with accuracy.
+```{r Damped Values, echo=TRUE, message=FALSE, warning=FALSE}
+holt5damped <- holt(airpass, damped = TRUE, phi = 0.9, h=15)
+```
+ 
+```{r Plot ith Holt Method and Damped Value, echo=TRUE, message=FALSE, warning=FALSE}
+autoplot(airpass) + autolayer(holt5, series="Holt's Method", PI=FALSE)+
+autolayer(holt5damped, series="Damped Holt's Method", PI=FALSE) +
+ggtitle("Forecasts from Holt's Method") +
+guides(colour=guide_legend(title="Forecast"))
+```
+
+ 
+## Holt's Seasonal Trend Model
+#### Now we are adding in the seasonalilty to the model.  There are 2 options, additive and multiplicative models.
+   
+```{r echo=TRUE}
+hw1 <- hw(airpass, seasonal = "additive")
+hw2 <- hw(airpass, seasonal = "multiplicative")
+```
+ 
+#### Plot the Holt's Seasonal Trend Model
+```{r Holts Seasonal Trend Model, echo=TRUE}
+autoplot(airpass) +
+  autolayer(hw1, series = "HW additive forecasts", PI = FALSE) +
+  autolayer(hw2, series = "HW multiplicative forecasts", PI = FALSE) +
+  guides(colour = guide_legend(title="Forecast"))
+```
+
+Just by looking at the graph above, it looks like the multiplicative model is a better fit based off of past data.
+
+
