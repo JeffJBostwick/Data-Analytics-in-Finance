@@ -2,7 +2,11 @@
 title: "Data Analyltics in Finance"
 author: "Jeff Bostwick"
 date: "11/6/2020"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    theme: united
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
