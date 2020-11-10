@@ -13,7 +13,134 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Holt Winter's Forecasting Method
+##Methods to analyzie Time Series Data to build forecasting models and support decision making in R
+
+### Key Terms:
+Root mean squared error
+Simple moving average - a series of average values calculated using consecutive time periods.  It is a smoothing technique to get an overall idea of the trend.  Note:  the moving average is not good for data with trends or seasonality.
+Simple exponential smoothing
+Holt-Winters exponential smoothing
+Regression
+Autoregression
+White noise
+
+Loading packages
+```{r}
+library(fma)
+```
+
+
+##Average Method
+This Method is simply forecasting future values as the mean of past data.
+h is the number of periods that we want to look ahead (ex given the past 60 days I want to look at what the next day will be).
+
+Preview of the Dataset:
+```{r}
+print(beer)
+```
+
+```{r}
+summary(beer)
+```
+
+```{r}
+plot(beer)
+```
+
+Mean forecast for 1 period forward:
+```{r}
+meanf(beer,1)
+```
+
+
+Mean forecast for 5 periods forward:
+```{r}
+meanf(beer,5)
+```
+
+Note that the Forecasts are the same for the next 5 periods.  We have h=1,2,3,4,& 5 but the forecast is the same.
+
+--------------------------------------------------------------------------------
+
+## Naive Method
+The Naive Method uses the most recent observation as the forecast (ex what is my forecast for tomorrow's value, if I only have today's value?)  Your 'best guess' for tomorrow is equal to the value of today.  Think of stock prices for example (what is the best guess of a stock price for tomorrow?  you best guess would be today's stock price)
+
+```{r}
+print(beer)
+```
+
+
+```{r}
+naive(beer, 1)
+```
+
+The 'best guess' for one period ahead is '153'.
+
+```{r}
+naive(beer, 5)
+```
+
+
+#### Random Walk Command (another way to talk about naive forecasts)
+```{r}
+rwf(beer, 5)
+```
+
+--------------------------------------------------------------------------------
+
+## Linear Regression for forecasting
+Regression analysis uses a model to examine the relationship between a variable Y and other variables...
+Y is called the response variable
+X is the predictor (or independent variable)
+We are going to try to use Hardcover book sales as a leading indicator of Softcover book sales
+
+```{r}
+head(books)
+```
+
+```{r}
+summary(books)
+```
+
+```{r}
+mean(books)
+```
+
+
+```{r}
+autoplot(books, , ylab="sales", xlab="Time", size = 1)
+```
+
+
+```{r}
+fit <- lm(Paperback ~ Hardcover, data=books)
+```
+
+```{r}
+summary(fit)
+```
+
+The intercept term of 147.28 was considered to be significant
+The slope of about .2  shows that this is not significant
+
+```{r}
+plot(Paperback ~ Hardcover, data=books, pch = 19)
+abline(lm(Paperback ~ Hardcover, data=books))
+```
+
+--------------------------------------------------------------------------------
+
+## Lesson 2-2:
+
+##Moving Averages
+Moving averages work well if there are no trends or seasonality.
+The k period moving average is a series of average values calculated using consecutive time periods.  It is a smoothing technique to get an overall idea of the trend.
+
+--------------------------------------------------------------------------------
+
+### Holt Winter's Forecasting Method
+Holt Winters additive model for seasonality and trend.  The additive model is useful when the seasonal cycles are constant.
+The multiplicative method is useful when the seasonal variation changes in proportion to the level of the time series.
  
 #### Loading Packages
 ```{r Loadiing Packages, echo=TRUE, message=FALSE, warning=FALSE}
@@ -23,22 +150,22 @@ library(datasets)
 library(ggplot2)
 ```
  
-
 #### View Sample Dataset
 ```{r Sample Data, echo=TRUE, message=FALSE, warning=FALSE}
 airpass
 ```
  
-
 #### Plot the Dataset
 
 ```{r}
 autoplot(airpass)
 ```
  
- 
-### Simple Exponential Smoothing Example
-#### Creating a varaiable called SES5 that is simple expontntial smoothing.  h accounts for the number of lags.
+There does seem to be an upward trend as well as a seasonal cycle.  The seasonal cycles seem to be growing over time
+
+Simple Exponential Smoothing 
+It is used on past data points to forecast the future like moving averages.  Exponential gives more weight to more recent values.  Past values are smoothed like moving averages.
+#### Creating a varaiable called SES5 that is simple exponential smoothing.  'h' accounts for the number of lags.
  
 ```{r}
 ses5 <- ses(airpass, h=5)
@@ -77,8 +204,8 @@ holt5 <- holt(airpass, h=5)
 autoplot(holt5) + autolayer(fitted(holt5), series = "Fitted")
 ```
  
-#### There is evidence that the Holt Linear Trend method overestimates the predicted values.
-#### There is research that says that dampening the trend can help with accuracy.
+There is evidence that the Holt Linear Trend method overestimates the predicted values.
+There is research that says that dampening the trend can help with accuracy.
 ```{r Damped Values, echo=TRUE, message=FALSE, warning=FALSE}
 holt5damped <- holt(airpass, damped = TRUE, phi = 0.9, h=15)
 ```
@@ -109,4 +236,32 @@ autoplot(airpass) +
 
 Just by looking at the graph above, it looks like the multiplicative model is a better fit based off of past data.
 
+--------------------------------------------------------------------------------
+
+## Autoregression
+
+Regression is the simplest type of predictive analysis.
+
+What is the difference between Regression and Autoregression?
+- Regression - we need an input variable to predict the output variable.  ex, how study time (input variable) will impact marks obtained in examination (output variable)
+
+- Autoregression - is a process to find a relationship with itself (its past data).  ex, how yesterday's inflation (input variable) will impact today's inflation (output variable)
+
+Auto regressiion is a representation of time-varying processes.  It is used to explain linear dependence of any variable's future value to its previous time step value.  This tool is often used in finance.
+
+
+####White Noise example
+```{r}
+w <- rnorm(5)    #five randmom standard normal numbers
+w                #displays contents of w
+```
+
+```{r}
+w2 <- rnorm(500)      #500 random standard normal numbers
+plot(w2, type='l')    #line plot of w2
+```
+```{r}
+mean(w2)
+sd(w2)
+```
 
